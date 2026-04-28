@@ -11,20 +11,22 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Crédito Pro - v6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Sistema de Crédito Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Gestão de Empréstimos Profissional</h1>
-            <p>Controle Individual por Parcela | Score Dinâmico</p>
+            <h1>Gestão de Empréstimos</h1>
+            <p>Controle de Parcelas | Score Dinâmico</p>
         </header>
 
         <section class="cadastro">
             <div class="form-grid">
-                <div class="campo"><label>Nome do Cliente</label><input type="text" id="nomeCliente"></div>
+                <div class="campo"><label>Nome</label><input type="text" id="nomeCliente"></div>
                 <div class="campo"><label>WhatsApp</label><input type="text" id="telCliente"></div>
                 <div class="campo"><label>Valor (R$)</label><input type="number" id="valorEmprestimo"></div>
                 <div class="campo"><label>Juros (%)</label><input type="number" id="taxaJuros"></div>
@@ -37,8 +39,8 @@
                         <option value="30">Mensal</option>
                     </select>
                 </div>
-                <div class="campo"><label>Total de Parcelas</label><input type="number" id="qtdParcelas"></div>
-                <button onclick="adicionarCliente()" class="btn-main">Cadastrar Empréstimo</button>
+                <div class="campo"><label>Parcelas</label><input type="number" id="qtdParcelas"></div>
+                <button onclick="adicionarCliente()" class="btn-main">Cadastrar</button>
             </div>
         </section>
 
@@ -49,6 +51,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
