@@ -2,7 +2,7 @@ let emprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dataInicio').valueAsDate = new Date();
-    document.getElementById('btnSalvar').addEventListener('click', salvarEmprestimo);
+    document.getElementById('btnSalvar').onclick = salvarEmprestimo;
     renderizarTabela();
 });
 
@@ -11,7 +11,6 @@ function calcularDataTermino(inicio, parcelas, frequencia) {
     let qtd = parseInt(parcelas);
     if (frequencia === 'diario') data.setDate(data.getDate() + qtd);
     else if (frequencia === 'semanal') data.setDate(data.getDate() + (qtd * 7));
-    else if (frequencia === 'quinzenal') data.setDate(data.getDate() + (qtd * 15));
     else if (frequencia === 'mensal') data.setMonth(data.getMonth() + qtd);
     return data.toISOString().split('T')[0];
 }
@@ -19,37 +18,47 @@ function calcularDataTermino(inicio, parcelas, frequencia) {
 function salvarEmprestimo() {
     const nome = document.getElementById('nome').value;
     const zap = document.getElementById('whatsapp').value;
-    const valor = document.getElementById('valor').value;
+    const capital = parseFloat(document.getElementById('valor').value);
+    const jurosPerc = parseFloat(document.getElementById('juros').value);
     const freq = document.getElementById('frequencia').value;
     const inicio = document.getElementById('dataInicio').value;
     const parcelas = document.getElementById('parcelas').value;
 
-    if (!nome || !valor || !parcelas) {
-        alert("Preencha os campos obrigatórios!");
-        return;
-    }
+    if (!nome || !capital) return alert("Preencha Nome e Valor!");
+
+    // CÁLCULO DO JUROS: Ex: 100 + 20% = 120
+    const totalComJuros = capital + (capital * (jurosPerc / 100));
 
     const novo = {
         id: Date.now(),
-        nome, zap, valor, frequencia: freq, inicio, parcelas,
-        dataTermino: calcularDataTermino(inicio, parcelas, freq),
-        pagamentos: [], // Array para guardar quais dias foram marcados
-        score: 100
+        nome, zap, 
+        valorOriginal: capital,
+        totalComJuros: totalComJuros.toFixed(2),
+        inicio, 
+        termino: calcularDataTermino(inicio, parcelas, freq),
+        parcelas,
+        frequencia: freq,
+        statusPagamentos: {} // Objeto para guardar estado de cada dia {1: 'pago', 2: 'atrasado'}
     };
 
     emprestimos.push(novo);
     localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
     renderizarTabela();
-    limparCampos();
 }
 
-function marcarPagamento(idEmprestimo, numeroParcela) {
+function alternarEstadoDia(idEmprestimo, numeroDia) {
     const emp = emprestimos.find(e => e.id === idEmprestimo);
-    if (!emp.pagamentos) emp.pagamentos = [];
+    if (!emp.statusPagamentos) emp.statusPagamentos = {};
 
-    const index = emp.pagamentos.indexOf(numeroParcela);
-    if (index > -1) emp.pagamentos.splice(index, 1); // Desmarca
-    else emp.pagamentos.push(numeroParcela); // Marca pago
+    const estadoAtual = emp.statusPagamentos[numeroDia];
+
+    if (!estadoAtual) {
+        emp.statusPagamentos[numeroDia] = 'pago'; // 1º Clique: Verde
+    } else if (estadoAtual === 'pago') {
+        emp.statusPagamentos[numeroDia] = 'atrasado'; // 2º Clique: Vermelho
+    } else {
+        delete emp.statusPagamentos[numeroDia]; // 3º Clique: Volta ao cinza
+    }
 
     localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
     renderizarTabela();
@@ -60,48 +69,34 @@ function renderizarTabela() {
     lista.innerHTML = '';
 
     emprestimos.forEach(emp => {
-        // Gera o checklist de quadradinhos
         let checklistHTML = '<div class="checklist">';
         for (let i = 1; i <= emp.parcelas; i++) {
-            const isPago = emp.pagamentos && emp.pagamentos.includes(i);
-            checklistHTML += `<span class="dia ${isPago ? 'pago' : ''}" onclick="marcarPagamento(${emp.id}, ${i})">${i}</span>`;
+            const estado = emp.statusPagamentos[i] || ''; // 'pago', 'atrasado' ou vazio
+            checklistHTML += `<span class="dia ${estado}" onclick="alternarEstadoDia(${emp.id}, ${i})">${i}</span>`;
         }
         checklistHTML += '</div>';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${emp.nome}</strong><br><small>${emp.zap}</small></td>
-            <td>Início: ${formatarData(emp.inicio)}<br>Fim: ${formatarData(emp.dataTermino)}</td>
+            <td>Início: ${emp.inicio}<br>Fim: ${emp.termino}</td>
             <td>
-                R$ ${emp.valor} (${emp.parcelas}x ${emp.frequencia})
+                Total: <strong>R$ ${emp.totalComJuros}</strong> <small>(Capital: ${emp.valorOriginal})</small>
                 ${checklistHTML}
             </td>
-            <td><span class="score-badge score-high">${emp.score} pts</span></td>
             <td>
-                <a href="https://wa.me/55${emp.zap}?text=Olá ${emp.nome}" target="_blank" class="btn-zap">WhatsApp</a>
-                <button onclick="remover(${emp.id})" style="border:none; background:none; color:red; cursor:pointer; margin-left:10px">Excluir</button>
+                <a href="https://wa.me/55${emp.zap}" target="_blank" class="btn-zap">WhatsApp</a>
+                <button onclick="remover(${emp.id})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px">Excluir</button>
             </td>
         `;
         lista.appendChild(tr);
     });
 }
 
-function formatarData(iso) {
-    const [y, m, d] = iso.split('-');
-    return `${d}/${m}/${y}`;
-}
-
 function remover(id) {
-    if (confirm("Excluir registro?")) {
+    if (confirm("Remover?")) {
         emprestimos = emprestimos.filter(e => e.id !== id);
         localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
         renderizarTabela();
     }
-}
-
-function limparCampos() {
-    document.getElementById('nome').value = '';
-    document.getElementById('whatsapp').value = '';
-    document.getElementById('valor').value = '';
-    document.getElementById('parcelas').value = '';
 }

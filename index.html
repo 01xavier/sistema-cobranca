@@ -1,104 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>CEP</title>
-</head>
-<body>
-    <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>Sistema de Crédito Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cobrança - Controle Total</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
-    <div class="container">
+
+<div class="container">
     <header>
         <h1>Gestor de Crédito Pessoal</h1>
-        <p>Controle de empréstimos, scores e prazos</p>
-    </header>
-
-    <section class="cadastro-section">
-        <h2>Novo Empréstimo</h2>
-        <div class="grid-form">
-            <div class="form-group">
-                <label for="nome">Nome do Cliente</label>
-                <input type="text" id="nome" placeholder="Ex: João Silva">
-            </div>
-            <div class="form-group">
-                <label for="whatsapp">WhatsApp (com DDD)</label>
-                <input type="number" id="whatsapp" placeholder="11999999999">
-            </div>
-            <div class="form-group">
-                <label for="valor">Valor do Empréstimo (R$)</label>
-                <input type="number" id="valor" placeholder="1000.00">
-            </div>
-            <div class="form-group">
-                <label for="frequencia">Frequência de Pagamento</label>
-                <select id="frequencia">
-                    <option value="diario">Diário</option>
-                    <option value="semanal">Semanal</option>
-                    <option value="quinzenal">Quinzenal</option>
-                    <option value="mensal">Mensal</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="dataInicio">Data de Início</label>
-                <input type="date" id="dataInicio">
-            </div>
-            <div class="form-group">
-                <label for="parcelas">Quantidade de Parcelas</label>
-                <input type="number" id="parcelas" min="1" placeholder="Ex: 10">
-            </div>
-            <div class="btn-group">
-                <button id="btnSalvar" class="btn-save">SALVAR E CADASTRAR</button>
-            </div>
-        </div>
-    </section>
-
-    <hr>
-
-    <section class="dashboard-section">
-        <h2>Dashboard de Clientes</h2>
-        
-        <div class="filters">
-            <button class="btn-filter active" data-filter="todos">Todos</button>
-            <button class="btn-filter" data-filter="atrasado">Atrasados</button>
-            <button class="btn-filter" data-filter="em-dia">Em Dia</button>
-        </div>
-
-        <div class="table-container">
-            <table id="tabelaEmprestimos">
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Período (Início/Fim)</th>
-                        <th>Valor / Parcelas</th>
-                        <th>Score</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="listaClientes">
-                    </tbody>
-            </table>
-        </div>
-    </section>
-</div>
-
-</body>
-</html>
-
-    <div class="container">
-    <header>
-        <h1>Gestor de Crédito Pessoal</h1>
-        <p>Controle de Empréstimos e Cobrança Diária</p>
+        <p>Verde = Pago | Vermelho = Atrasado</p>
     </header>
 
     <section class="cadastro-section">
@@ -106,69 +19,57 @@
         <div class="grid-form">
             <div class="form-group">
                 <label>Nome do Cliente</label>
-                <input type="text" id="nome" placeholder="Ex: João Silva">
+                <input type="text" id="nome" placeholder="Nome completo">
             </div>
             <div class="form-group">
-                <label>WhatsApp (com DDD)</label>
-                <input type="number" id="whatsapp" placeholder="11999999999">
+                <label>WhatsApp</label>
+                <input type="number" id="whatsapp" placeholder="Ex: 83999999999">
             </div>
             <div class="form-group">
-                <label>Valor Total (R$)</label>
-                <input type="number" id="valor" placeholder="1000.00">
+                <label>Valor Capital (R$)</label>
+                <input type="number" id="valor" placeholder="Ex: 100.00">
+            </div>
+            <div class="form-group">
+                <label>Juros (%)</label>
+                <input type="number" id="juros" value="20">
             </div>
             <div class="form-group">
                 <label>Frequência</label>
                 <select id="frequencia">
                     <option value="diario">Diário</option>
                     <option value="semanal">Semanal</option>
-                    <option value="quinzenal">Quinzenal</option>
                     <option value="mensal">Mensal</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Nº de Parcelas</label>
+                <input type="number" id="parcelas" value="20">
             </div>
             <div class="form-group">
                 <label>Data de Início</label>
                 <input type="date" id="dataInicio">
             </div>
-            <div class="form-group">
-                <label>Nº de Parcelas / Dias</label>
-                <input type="number" id="parcelas" min="1" placeholder="Ex: 20">
-            </div>
             <div class="btn-group">
-                <button id="btnSalvar" class="btn-save">SALVAR E REGISTRAR</button>
+                <button id="btnSalvar" class="btn-save">CADASTRAR EMPRÉSTIMO</button>
             </div>
         </div>
     </section>
 
-    <hr>
-
-    <section class="dashboard-section">
-        <div class="header-dash">
-            <h2>Dashboard de Cobrança</h2>
-            <div class="filters">
-                <button class="btn-filter active" data-filter="todos">Todos</button>
-                <button class="btn-filter" data-filter="atrasado">Atrasados</button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Datas (Início/Fim)</th>
-                        <th>Valor & Controle de Pagos</th>
-                        <th>Score</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="listaClientes">
-                    </tbody>
-            </table>
-        </div>
-    </section>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Prazos</th>
+                    <th>Financeiro & Parcelas</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="listaClientes"></tbody>
+        </table>
+    </div>
 </div>
 
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
