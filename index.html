@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Cobrança - Controle Total</title>
+    <title>Sistema de Cobrança - Oficial</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,23 +15,26 @@
     </header>
 
     <section class="cadastro-section">
-        <h2>Novo Empréstimo</h2>
         <div class="grid-form">
             <div class="form-group">
                 <label>Nome do Cliente</label>
-                <input type="text" id="nome" placeholder="Nome completo">
+                <input type="text" id="nome">
             </div>
             <div class="form-group">
                 <label>WhatsApp</label>
-                <input type="number" id="whatsapp" placeholder="Ex: 83999999999">
+                <input type="number" id="whatsapp" placeholder="83999999999">
             </div>
             <div class="form-group">
                 <label>Valor Capital (R$)</label>
-                <input type="number" id="valor" placeholder="Ex: 100.00">
+                <input type="number" id="valor">
             </div>
             <div class="form-group">
                 <label>Juros (%)</label>
                 <input type="number" id="juros" value="20">
+            </div>
+            <div class="form-group">
+                <label>Parcelas</label>
+                <input type="number" id="parcelas" value="20">
             </div>
             <div class="form-group">
                 <label>Frequência</label>
@@ -42,11 +45,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Nº de Parcelas</label>
-                <input type="number" id="parcelas" value="20">
-            </div>
-            <div class="form-group">
-                <label>Data de Início</label>
+                <label>Data Início</label>
                 <input type="date" id="dataInicio">
             </div>
             <div class="btn-group">
@@ -61,7 +60,7 @@
                 <tr>
                     <th>Cliente</th>
                     <th>Prazos</th>
-                    <th>Financeiro & Parcelas</th>
+                    <th>Valor & Parcelas</th>
                     <th>Ações</th>
                 </tr>
             </thead>

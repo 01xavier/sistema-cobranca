@@ -1,64 +1,48 @@
 let emprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
 
-document.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
     document.getElementById('dataInicio').valueAsDate = new Date();
     document.getElementById('btnSalvar').onclick = salvarEmprestimo;
     renderizarTabela();
-});
-
-function calcularDataTermino(inicio, parcelas, frequencia) {
-    let data = new Date(inicio);
-    let qtd = parseInt(parcelas);
-    if (frequencia === 'diario') data.setDate(data.getDate() + qtd);
-    else if (frequencia === 'semanal') data.setDate(data.getDate() + (qtd * 7));
-    else if (frequencia === 'mensal') data.setMonth(data.getMonth() + qtd);
-    return data.toISOString().split('T')[0];
-}
+};
 
 function salvarEmprestimo() {
     const nome = document.getElementById('nome').value;
     const zap = document.getElementById('whatsapp').value;
     const capital = parseFloat(document.getElementById('valor').value);
     const jurosPerc = parseFloat(document.getElementById('juros').value);
+    const parcelas = document.getElementById('parcelas').value;
     const freq = document.getElementById('frequencia').value;
     const inicio = document.getElementById('dataInicio').value;
-    const parcelas = document.getElementById('parcelas').value;
 
-    if (!nome || !capital) return alert("Preencha Nome e Valor!");
+    if (!nome || isNaN(capital)) return alert("Preencha Nome e Valor!");
 
-    // CÁLCULO DO JUROS: Ex: 100 + 20% = 120
-    const totalComJuros = capital + (capital * (jurosPerc / 100));
+    // Valor + Juros (ex: 100 + 20% = 120)
+    const total = capital + (capital * (jurosPerc / 100));
 
     const novo = {
         id: Date.now(),
         nome, zap, 
-        valorOriginal: capital,
-        totalComJuros: totalComJuros.toFixed(2),
-        inicio, 
-        termino: calcularDataTermino(inicio, parcelas, freq),
-        parcelas,
-        frequencia: freq,
-        statusPagamentos: {} // Objeto para guardar estado de cada dia {1: 'pago', 2: 'atrasado'}
+        total: total.toFixed(2),
+        inicio, parcelas,
+        statusPagos: {} // Guarda se é 'pago' ou 'atrasado'
     };
 
     emprestimos.push(novo);
     localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
     renderizarTabela();
+    // Limpar campos
+    document.getElementById('nome').value = '';
+    document.getElementById('valor').value = '';
 }
 
-function alternarEstadoDia(idEmprestimo, numeroDia) {
-    const emp = emprestimos.find(e => e.id === idEmprestimo);
-    if (!emp.statusPagamentos) emp.statusPagamentos = {};
+function alternarEstado(idEmp, numDia) {
+    const emp = emprestimos.find(e => e.id === idEmp);
+    const atual = emp.statusPagos[numDia];
 
-    const estadoAtual = emp.statusPagamentos[numeroDia];
-
-    if (!estadoAtual) {
-        emp.statusPagamentos[numeroDia] = 'pago'; // 1º Clique: Verde
-    } else if (estadoAtual === 'pago') {
-        emp.statusPagamentos[numeroDia] = 'atrasado'; // 2º Clique: Vermelho
-    } else {
-        delete emp.statusPagamentos[numeroDia]; // 3º Clique: Volta ao cinza
-    }
+    if (!atual) emp.statusPagos[numDia] = 'pago';
+    else if (atual === 'pago') emp.statusPagos[numDia] = 'atrasado';
+    else delete emp.statusPagos[numDia];
 
     localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
     renderizarTabela();
@@ -69,24 +53,21 @@ function renderizarTabela() {
     lista.innerHTML = '';
 
     emprestimos.forEach(emp => {
-        let checklistHTML = '<div class="checklist">';
+        let diasHTML = '<div class="checklist">';
         for (let i = 1; i <= emp.parcelas; i++) {
-            const estado = emp.statusPagamentos[i] || ''; // 'pago', 'atrasado' ou vazio
-            checklistHTML += `<span class="dia ${estado}" onclick="alternarEstadoDia(${emp.id}, ${i})">${i}</span>`;
+            const status = emp.statusPagos[i] || '';
+            diasHTML += `<span class="dia ${status}" onclick="alternarEstado(${emp.id}, ${i})">${i}</span>`;
         }
-        checklistHTML += '</div>';
+        diasHTML += '</div>';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><strong>${emp.nome}</strong><br><small>${emp.zap}</small></td>
-            <td>Início: ${emp.inicio}<br>Fim: ${emp.termino}</td>
+            <td><strong>${emp.nome}</strong></td>
+            <td>Início: ${emp.inicio}</td>
+            <td>R$ ${emp.total} ${diasHTML}</td>
             <td>
-                Total: <strong>R$ ${emp.totalComJuros}</strong> <small>(Capital: ${emp.valorOriginal})</small>
-                ${checklistHTML}
-            </td>
-            <td>
-                <a href="https://wa.me/55${emp.zap}" target="_blank" class="btn-zap">WhatsApp</a>
-                <button onclick="remover(${emp.id})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px">Excluir</button>
+                <a href="https://wa.me/55${emp.zap}" target="_blank" class="btn-zap">Zap</a>
+                <button onclick="remover(${emp.id})" style="color:red; background:none; border:none; margin-left:10px; cursor:pointer">X</button>
             </td>
         `;
         lista.appendChild(tr);
@@ -94,7 +75,7 @@ function renderizarTabela() {
 }
 
 function remover(id) {
-    if (confirm("Remover?")) {
+    if(confirm("Excluir?")) {
         emprestimos = emprestimos.filter(e => e.id !== id);
         localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
         renderizarTabela();
