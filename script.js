@@ -1,122 +1,136 @@
-let clientes = JSON.parse(localStorage.getItem('credito_v6_data')) || [];
+// Inicialização dos dados (Recupera do navegador ou começa vazio)
+let emprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
 
-function adicionarCliente() {
-    const nome = document.getElementById('nomeCliente').value;
-    const tel = document.getElementById('telCliente').value;
-    const val = parseFloat(document.getElementById('valorEmprestimo').value);
-    const taxa = parseFloat(document.getElementById('taxaJuros').value);
-    const qtd = parseInt(document.getElementById('qtdParcelas').value);
-    const freq = parseInt(document.getElementById('frequencia').value);
-
-    if (!nome || isNaN(val) || isNaN(qtd)) return alert("Preencha todos os campos!");
-
-    const montante = val + (val * (taxa / 100));
+// Evento que roda quando a página carrega
+document.addEventListener('DOMContentLoaded', () => {
+    // Define a data de hoje como padrão no formulário
+    document.getElementById('dataInicio').valueAsDate = new Date();
     
-    // Criamos um array de parcelas com o tamanho que o usuário definiu (ex: 20)
-    let parcelasArray = [];
-    for(let i=0; i < qtd; i++) {
-        parcelasArray.push(0); // 0 = pendente, 1 = pago, 2 = atrasado
+    // Configura o botão de salvar
+    document.getElementById('btnSalvar').addEventListener('click', salvarEmprestimo);
+    
+    // Carrega a tabela inicial
+    renderizarTabela();
+});
+
+// --- FUNÇÕES DE CÁLCULO ---
+
+function calcularDataTermino(inicio, parcelas, frequencia) {
+    let data = new Date(inicio);
+    let qtd = parseInt(parcelas);
+
+    if (frequencia === 'diario') {
+        data.setDate(data.getDate() + qtd);
+    } else if (frequencia === 'semanal') {
+        data.setDate(data.getDate() + (qtd * 7));
+    } else if (frequencia === 'quinzenal') {
+        data.setDate(data.getDate() + (qtd * 15));
+    } else if (frequencia === 'mensal') {
+        data.setMonth(data.getMonth() + qtd);
     }
 
-    clientes.push({
+    return data.toISOString().split('T')[0]; // Retorna formato YYYY-MM-DD
+}
+
+// --- GESTÃO DE DADOS ---
+
+function salvarEmprestimo() {
+    const campos = {
+        nome: document.getElementById('nome').value,
+        zap: document.getElementById('whatsapp').value,
+        valor: document.getElementById('valor').value,
+        frequencia: document.getElementById('frequencia').value,
+        inicio: document.getElementById('dataInicio').value,
+        parcelas: document.getElementById('parcelas').value
+    };
+
+    // Validação simples
+    if (!campos.nome || !campos.valor || !campos.parcelas) {
+        alert("Por favor, preencha os campos essenciais (Nome, Valor e Parcelas).");
+        return;
+    }
+
+    const dataTermino = calcularDataTermino(campos.inicio, campos.parcelas, campos.frequencia);
+
+    const novoEmprestimo = {
         id: Date.now(),
-        nome,
-        telefone: tel,
-        valorOriginal: montante,
-        valorParcela: montante / qtd,
-        frequencia: freq,
-        parcelas: parcelasArray
-    });
+        ...campos,
+        dataTermino: dataTermino,
+        status: 'em-dia',
+        score: 100 // Começa com score máximo
+    };
 
-    salvar();
-    limpar();
+    // Adiciona ao array e salva no LocalStorage
+    emprestimos.push(novoEmprestimo);
+    localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+
+    // Feedback e Atualização
+    alert("Empréstimo de " + campos.nome + " foi salvo!");
+    limparCampos();
+    renderizarTabela();
 }
 
-function alternarParcela(cId, pIdx) {
-    const c = clientes.find(x => x.id === cId);
-    if (!c) return;
-
-    // Ciclo: 0 -> 1 (Pago) -> 2 (Atrasado) -> 0
-    if (c.parcelas[pIdx] === 0) c.parcelas[pIdx] = 1;
-    else if (c.parcelas[pIdx] === 1) c.parcelas[pIdx] = 2;
-    else c.parcelas[pIdx] = 0;
-
-    salvar();
-}
-
-function calcularResumo(cliente) {
-    let pagos = cliente.parcelas.filter(p => p === 1).length;
-    let atrasados = cliente.parcelas.filter(p => p === 2).length;
-    
-    let saldoAtual = cliente.valorOriginal - (pagos * cliente.valorParcela);
-    
-    // Score começa em 500. Ganha 25 por pago, perde 60 por atrasado.
-    let scoreBase = 500 + (pagos * 25) - (atrasados * 60);
-    let scoreFinal = Math.max(0, Math.min(1000, scoreBase));
-
-    return { saldoAtual, scoreFinal, pagos, total: cliente.parcelas.length };
-}
-
-function salvar() {
-    localStorage.setItem('credito_v6_data', JSON.stringify(clientes));
-    renderizar();
-}
-
-function renderizar() {
-    const container = document.getElementById('listaContainer');
-    container.innerHTML = '';
-
-    clientes.forEach(c => {
-        const resumo = calcularResumo(c);
-        const corScore = resumo.scoreFinal > 700 ? '#16a34a' : (resumo.scoreFinal < 400 ? '#dc2626' : '#f59e0b');
-
-        let parcelasHtml = '';
-        c.parcelas.forEach((status, idx) => {
-            let classe = status === 1 ? 'pago' : (status === 2 ? 'atrasado' : '');
-            parcelasHtml += `
-                <div class="parcela-item ${classe}" onclick="alternarParcela(${c.id}, ${idx})">
-                    P${idx + 1}
-                </div>`;
-        });
-
-        container.innerHTML += `
-            <div class="cliente-card">
-                <div class="cliente-header">
-                    <div>
-                        <strong style="font-size: 18px;">${c.nome}</strong><br>
-                        <a href="https://wa.me/55${c.telefone.replace(/\D/g,'')}" target="_blank" class="btn-zap">📱 WhatsApp</a>
-                    </div>
-                    <div class="score-container">
-                        <div style="font-size: 10px; font-weight: bold; color: ${corScore}">SCORE: ${resumo.scoreFinal} pts</div>
-                        <div class="score-bar-bg">
-                            <div class="score-bar-fill" style="width: ${resumo.scoreFinal/10}%; background: ${corScore}"></div>
-                        </div>
-                    </div>
-                    <button class="btn-del" onclick="excluir(${c.id})">🗑</button>
-                </div>
-                
-                <div style="display: flex; gap: 20px; font-size: 13px; margin-bottom: 10px;">
-                    <span><b>Saldo Devedor:</b> <span style="color:red">R$ ${resumo.saldoAtual.toFixed(2)}</span></span>
-                    <span><b>Parcela:</b> R$ ${c.valorParcela.toFixed(2)}</span>
-                    <span><b>Progresso:</b> ${resumo.pagos} / ${resumo.total}</span>
-                </div>
-
-                <div class="parcelas-grid">${parcelasHtml}</div>
-                <small style="display:block; margin-top:10px; color:#94a3b8;">Clique na parcela: 1x Pago (Verde) | 2x Atrasado (Vermelho)</small>
-            </div>
-        `;
-    });
-}
-
-function excluir(id) {
-    if(confirm("Excluir este empréstimo?")) {
-        clientes = clientes.filter(x => x.id !== id);
-        salvar();
+function removerEmprestimo(id) {
+    if (confirm("Tem certeza que deseja excluir este registro?")) {
+        emprestimos = emprestimos.filter(emp => emp.id !== id);
+        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+        renderizarTabela();
     }
 }
 
-function limpar() {
-    document.querySelectorAll('input').forEach(i => i.value = '');
+// --- INTERFACE (UI) ---
+
+function renderizarTabela(filtro = 'todos') {
+    const lista = document.getElementById('listaClientes');
+    lista.innerHTML = '';
+
+    const dadosFiltrados = emprestimos.filter(emp => {
+        if (filtro === 'todos') return true;
+        return emp.status === filtro;
+    });
+
+    dadosFiltrados.forEach(emp => {
+        const tr = document.createElement('tr');
+        
+        // Lógica visual do Score
+        let classeScore = 'score-high';
+        if (emp.score < 40) classeScore = 'score-low';
+        else if (emp.score < 75) classeScore = 'score-med';
+
+        tr.innerHTML = `
+            <td><strong>${emp.nome}</strong><br><small>${emp.zap}</small></td>
+            <td>Início: ${formatarData(emp.inicio)}<br>Fim: ${formatarData(emp.dataTermino)}</td>
+            <td>R$ ${emp.valor}<br><small>${emp.parcelas}x (${emp.frequencia})</small></td>
+            <td><span class="score-badge ${classeScore}">${emp.score} pts</span></td>
+            <td>
+                <a href="https://wa.me/55${emp.zap}?text=Olá ${emp.nome}, segue o resumo do seu plano de R$ ${emp.valor}." 
+                   target="_blank" class="btn-zap">WhatsApp</a>
+                <button onclick="removerEmprestimo(${emp.id})" style="color:red; background:none; padding:5px; margin-left:10px">Excluir</button>
+            </td>
+        `;
+        lista.appendChild(tr);
+    });
 }
 
-renderizar();
+function formatarData(dataISO) {
+    if (!dataISO) return "--/--/----";
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function limparCampos() {
+    document.getElementById('nome').value = '';
+    document.getElementById('whatsapp').value = '';
+    document.getElementById('valor').value = '';
+    document.getElementById('parcelas').value = '';
+    document.getElementById('dataInicio').valueAsDate = new Date();
+}
+
+// Lógica dos botões de filtro
+document.querySelectorAll('.btn-filter').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelector('.btn-filter.active').classList.remove('active');
+        this.classList.add('active');
+        renderizarTabela(this.getAttribute('data-filter'));
+    });
+});
