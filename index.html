@@ -95,7 +95,78 @@
 </body>
 </html>
 
+    <div class="container">
+    <header>
+        <h1>Gestor de Crédito Pessoal</h1>
+        <p>Controle de Empréstimos e Cobrança Diária</p>
+    </header>
 
+    <section class="cadastro-section">
+        <h2>Novo Empréstimo</h2>
+        <div class="grid-form">
+            <div class="form-group">
+                <label>Nome do Cliente</label>
+                <input type="text" id="nome" placeholder="Ex: João Silva">
+            </div>
+            <div class="form-group">
+                <label>WhatsApp (com DDD)</label>
+                <input type="number" id="whatsapp" placeholder="11999999999">
+            </div>
+            <div class="form-group">
+                <label>Valor Total (R$)</label>
+                <input type="number" id="valor" placeholder="1000.00">
+            </div>
+            <div class="form-group">
+                <label>Frequência</label>
+                <select id="frequencia">
+                    <option value="diario">Diário</option>
+                    <option value="semanal">Semanal</option>
+                    <option value="quinzenal">Quinzenal</option>
+                    <option value="mensal">Mensal</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Data de Início</label>
+                <input type="date" id="dataInicio">
+            </div>
+            <div class="form-group">
+                <label>Nº de Parcelas / Dias</label>
+                <input type="number" id="parcelas" min="1" placeholder="Ex: 20">
+            </div>
+            <div class="btn-group">
+                <button id="btnSalvar" class="btn-save">SALVAR E REGISTRAR</button>
+            </div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="dashboard-section">
+        <div class="header-dash">
+            <h2>Dashboard de Cobrança</h2>
+            <div class="filters">
+                <button class="btn-filter active" data-filter="todos">Todos</button>
+                <button class="btn-filter" data-filter="atrasado">Atrasados</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Datas (Início/Fim)</th>
+                        <th>Valor & Controle de Pagos</th>
+                        <th>Score</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="listaClientes">
+                    </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 
 
     <script src="script.js"></script>
