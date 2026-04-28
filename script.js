@@ -1,83 +1,80 @@
-let emprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
+let emprestimos = JSON.parse(localStorage.getItem('dados_cobranca')) || [];
 
 window.onload = () => {
-    document.getElementById('dataInicio').valueAsDate = new Date();
-    document.getElementById('btnSalvar').onclick = salvarEmprestimo;
-    renderizarTabela();
+    document.getElementById('btnSalvar').onclick = cadastrar;
+    desenharTabela();
 };
 
-function salvarEmprestimo() {
+function cadastrar() {
     const nome = document.getElementById('nome').value;
     const zap = document.getElementById('whatsapp').value;
     const capital = parseFloat(document.getElementById('valor').value);
-    const jurosPerc = parseFloat(document.getElementById('juros').value);
-    const parcelas = document.getElementById('parcelas').value;
-    const freq = document.getElementById('frequencia').value;
-    const inicio = document.getElementById('dataInicio').value;
+    const juros = parseFloat(document.getElementById('juros').value);
+    const parcelas = parseInt(document.getElementById('parcelas').value);
 
-    if (!nome || isNaN(capital)) return alert("Preencha Nome e Valor!");
+    if (!nome || !capital) return alert("Preencha o Nome e o Valor!");
 
-    // Valor + Juros (ex: 100 + 20% = 120)
-    const total = capital + (capital * (jurosPerc / 100));
+    // Cálculo: Capital + Juros (ex: 100 + 20% = 120)
+    const total = capital + (capital * (juros / 100));
 
     const novo = {
         id: Date.now(),
-        nome, zap, 
+        nome, zap, parcelas,
         total: total.toFixed(2),
-        inicio, parcelas,
-        statusPagos: {} // Guarda se é 'pago' ou 'atrasado'
+        status: {} // Guardará se cada dia está 'pago' ou 'atrasado'
     };
 
     emprestimos.push(novo);
-    localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-    renderizarTabela();
-    // Limpar campos
+    localStorage.setItem('dados_cobranca', JSON.stringify(emprestimos));
+    desenharTabela();
+    
+    // Limpa os campos
     document.getElementById('nome').value = '';
     document.getElementById('valor').value = '';
 }
 
-function alternarEstado(idEmp, numDia) {
+function alternarDia(idEmp, numDia) {
     const emp = emprestimos.find(e => e.id === idEmp);
-    const atual = emp.statusPagos[numDia];
+    const estado = emp.status[numDia];
 
-    if (!atual) emp.statusPagos[numDia] = 'pago';
-    else if (atual === 'pago') emp.statusPagos[numDia] = 'atrasado';
-    else delete emp.statusPagos[numDia];
+    if (!estado) emp.status[numDia] = 'pago';
+    else if (estado === 'pago') emp.status[numDia] = 'atrasado';
+    else delete emp.status[numDia];
 
-    localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-    renderizarTabela();
+    localStorage.setItem('dados_cobranca', JSON.stringify(emprestimos));
+    desenharTabela();
 }
 
-function renderizarTabela() {
-    const lista = document.getElementById('listaClientes');
-    lista.innerHTML = '';
+function desenharTabela() {
+    const corpo = document.getElementById('lista');
+    corpo.innerHTML = '';
 
     emprestimos.forEach(emp => {
         let diasHTML = '<div class="checklist">';
         for (let i = 1; i <= emp.parcelas; i++) {
-            const status = emp.statusPagos[i] || '';
-            diasHTML += `<span class="dia ${status}" onclick="alternarEstado(${emp.id}, ${i})">${i}</span>`;
+            const classe = emp.status[i] || '';
+            diasHTML += `<span class="dia ${classe}" onclick="alternarDia(${emp.id}, ${i})">${i}</span>`;
         }
         diasHTML += '</div>';
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${emp.nome}</strong></td>
-            <td>Início: ${emp.inicio}</td>
-            <td>R$ ${emp.total} ${diasHTML}</td>
-            <td>
-                <a href="https://wa.me/55${emp.zap}" target="_blank" class="btn-zap">Zap</a>
-                <button onclick="remover(${emp.id})" style="color:red; background:none; border:none; margin-left:10px; cursor:pointer">X</button>
-            </td>
+        corpo.innerHTML += `
+            <tr>
+                <td><strong>${emp.nome}</strong></td>
+                <td>R$ ${emp.total}</td>
+                <td>${diasHTML}</td>
+                <td>
+                    <a href="https://wa.me/55${emp.zap}" target="_blank" class="btn-zap">Zap</a>
+                    <button onclick="excluir(${emp.id})" style="color:red; cursor:pointer; background:none; border:none; margin-left:10px">X</button>
+                </td>
+            </tr>
         `;
-        lista.appendChild(tr);
     });
 }
 
-function remover(id) {
-    if(confirm("Excluir?")) {
+function excluir(id) {
+    if (confirm("Deseja apagar?")) {
         emprestimos = emprestimos.filter(e => e.id !== id);
-        localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-        renderizarTabela();
+        localStorage.setItem('dados_cobranca', JSON.stringify(emprestimos));
+        desenharTabela();
     }
 }

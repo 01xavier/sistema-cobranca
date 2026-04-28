@@ -1,74 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Cobrança - Oficial</title>
+    <title>Sistema de Cobrança - Limpo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="container">
+    <div class="container">
     <header>
-        <h1>Gestor de Crédito Pessoal</h1>
-        <p>Verde = Pago | Vermelho = Atrasado</p>
+        <h1>Gestor de Cobrança</h1>
+        <p>Clique 1x: Pago (Verde) | Clique 2x: Atrasado (Vermelho)</p>
     </header>
 
-    <section class="cadastro-section">
-        <div class="grid-form">
-            <div class="form-group">
-                <label>Nome do Cliente</label>
-                <input type="text" id="nome">
-            </div>
-            <div class="form-group">
-                <label>WhatsApp</label>
-                <input type="number" id="whatsapp" placeholder="83999999999">
-            </div>
-            <div class="form-group">
-                <label>Valor Capital (R$)</label>
-                <input type="number" id="valor">
-            </div>
-            <div class="form-group">
-                <label>Juros (%)</label>
-                <input type="number" id="juros" value="20">
-            </div>
-            <div class="form-group">
-                <label>Parcelas</label>
-                <input type="number" id="parcelas" value="20">
-            </div>
-            <div class="form-group">
-                <label>Frequência</label>
-                <select id="frequencia">
-                    <option value="diario">Diário</option>
-                    <option value="semanal">Semanal</option>
-                    <option value="mensal">Mensal</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Data Início</label>
-                <input type="date" id="dataInicio">
-            </div>
-            <div class="btn-group">
-                <button id="btnSalvar" class="btn-save">CADASTRAR EMPRÉSTIMO</button>
-            </div>
-        </div>
-    </section>
+    <div class="formulario">
+        <input type="text" id="nome" placeholder="Nome do Cliente">
+        <input type="number" id="whatsapp" placeholder="WhatsApp (DDD)">
+        <input type="number" id="valor" placeholder="Valor Capital (R$)">
+        <input type="number" id="juros" placeholder="Juros %" value="20">
+        <input type="number" id="parcelas" placeholder="Dias/Parcelas" value="20">
+        <select id="frequencia">
+            <option value="diario">Diário</option>
+            <option value="semanal">Semanas</option>
+        </select>
+        <button id="btnSalvar">CADASTRAR</button>
+    </div>
 
-    <div class="table-container">
+    <div class="tabela-area">
         <table>
             <thead>
                 <tr>
                     <th>Cliente</th>
-                    <th>Prazos</th>
-                    <th>Valor & Parcelas</th>
+                    <th>Valor Total</th>
+                    <th>Controle de Parcelas</th>
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="listaClientes"></tbody>
+            <tbody id="lista"></tbody>
         </table>
     </div>
 </div>
 
+
 <script src="script.js"></script>
+
+
 </body>
 </html>
